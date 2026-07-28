@@ -43,4 +43,44 @@ describe('@ankole/agent-computer Codex Home setup', () => {
 
     await expect(withCodexHomeSetup('/agents/failure/.codex', async () => 'recovered')).resolves.toBe('recovered')
   })
+
+  it('rejects promptly on abort while queued behind a prior setup', async () => {
+    let releaseFirst = (): void => undefined
+    let markFirstStarted = (): void => undefined
+    const firstGate = new Promise<void>(resolve => {
+      releaseFirst = resolve
+    })
+    const firstStarted = new Promise<void>(resolve => {
+      markFirstStarted = resolve
+    })
+
+    const first = withCodexHomeSetup('/agents/abort/.codex', async () => {
+      markFirstStarted()
+      await firstGate
+      return 'first-done'
+    })
+    await firstStarted
+
+    const controller = new AbortController()
+    const queued = withCodexHomeSetup(
+      '/agents/abort/.codex',
+      async () => 'should-not-run',
+      controller.signal
+    )
+
+    controller.abort(new Error('job stopped'))
+    await expect(queued).rejects.toThrow('job stopped')
+
+    releaseFirst()
+    await expect(first).resolves.toBe('first-done')
+  })
+
+  it('rejects immediately when signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort(new Error('pre-aborted'))
+
+    await expect(
+      withCodexHomeSetup('/agents/pre-abort/.codex', async () => 'nope', controller.signal)
+    ).rejects.toThrow('pre-aborted')
+  })
 })

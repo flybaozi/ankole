@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 26.07.49 (2026-07-28)
+
+- Make the shared Codex Home setup queue abort-aware. When `abortSignal` fires while a Job is queued behind a prior setup for the same `codexHome`, the waiter rejects promptly instead of blocking until the prior setup completes. Add test coverage for abort during queue wait and pre-aborted signal.
+
 ## Version 26.07.48 (2026-07-27)
 
 - Serialize shared Codex Home setup for overlapping Background Agent Jobs from one Agent. Plugin installation, hook trust, and Skill configuration now finish for one Job before the next Job changes the same Plugin cache, while Jobs for different Agents and all post-setup execution remain concurrent. Add regression coverage for same-Home serialization, cross-Agent concurrency, and lock release after failure, and document the process-local queue's worker-placement boundary.
