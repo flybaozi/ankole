@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 26.07.48 (2026-07-27)
+
+- Serialize shared Codex Home setup for overlapping Background Agent Jobs from one Agent. Plugin installation, hook trust, and Skill configuration now finish for one Job before the next Job changes the same Plugin cache, while Jobs for different Agents and all post-setup execution remain concurrent. Add regression coverage for same-Home serialization, cross-Agent concurrency, and lock release after failure, and document the process-local queue's worker-placement boundary.
+
 ## Version 26.07.47 (2026-07-27)
 
 - Keep the Agent Computer worker registry UNLOGGED and make heartbeat recovery complete. Worker heartbeats now carry runtime, version, capacity, available slots, and active-turn load; the kernel validates that snapshot, and the control plane rebuilds a missing authenticated worker row without weakening route or incarnation fences or hydrating the scheduler on every heartbeat. Update the RuntimeFabric contract and generated TypeScript codec, and add protocol, admission, and real Docker chaos coverage that deletes a live worker row and verifies that the same process recreates it on its next heartbeat without a restart.
